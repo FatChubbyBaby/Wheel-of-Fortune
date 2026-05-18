@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wheel of Fortune</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0a0f2e;--navy2:#111840;
+  --gold:#f5c542;--gold2:#e0a800;--gold3:#fde68a;
+  --red:#c0392b;--text:#fff;--muted:rgba(255,255,255,0.55);
+}
+body{
+  background:var(--navy);color:var(--text);font-family:'Oswald',sans-serif;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  padding:1.5rem 1rem 3rem;overflow-x:hidden;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% 0%,rgba(245,197,66,0.08) 0%,transparent 70%),
+    repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(255,255,255,0.015) 60px,rgba(255,255,255,0.015) 61px),
+    repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(255,255,255,0.015) 60px,rgba(255,255,255,0.015) 61px);
+}
+.everything{width:100%;max-width:480px;}
+
+.lights{display:flex;justify-content:center;gap:8px;margin-bottom:1.4rem;}
+.light{width:10px;height:10px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);animation:blink 1.2s ease-in-out infinite;}
+.light:nth-child(even){animation-delay:.6s;background:#fff;box-shadow:0 0 8px #fff;}
+.light:nth-child(3n){animation-delay:.3s;background:var(--red);box-shadow:0 0 8px var(--red);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+.header{text-align:center;margin-bottom:1.8rem;}
+.header-inner{display:inline-block;padding:.6rem 2.5rem;border:3px solid var(--gold);border-radius:4px;position:relative;}
+.header-inner::before,.header-inner::after{content:'★';color:var(--gold);font-size:1.1rem;position:absolute;top:50%;transform:translateY(-50%);}
+.header-inner::before{left:.6rem;}.header-inner::after{right:.6rem;}
+.header h1{font-family:'Cinzel',serif;font-size:clamp(1.8rem,6vw,3.2rem);font-weight:900;letter-spacing:6px;text-transform:uppercase;color:var(--gold);text-shadow:0 0 20px rgba(245,197,66,0.4),0 2px 0 rgba(0,0,0,0.5);line-height:1.1;}
+.header h1 span{color:#fff;}
+.header p{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--muted);margin-top:.3rem;}
+
+.wheel-section{display:flex;flex-direction:column;align-items:center;gap:1.2rem;}
+.wheel-outer{position:relative;padding:12px;border-radius:50%;
+  background:conic-gradient(var(--gold2) 0deg,var(--gold3) 10deg,var(--gold2) 20deg,var(--gold3) 30deg,var(--gold2) 40deg,var(--gold3) 50deg,var(--gold2) 60deg,var(--gold3) 70deg,var(--gold2) 80deg,var(--gold3) 90deg,var(--gold2) 100deg,var(--gold3) 110deg,var(--gold2) 120deg,var(--gold3) 130deg,var(--gold2) 140deg,var(--gold3) 150deg,var(--gold2) 160deg,var(--gold3) 170deg,var(--gold2) 180deg,var(--gold3) 190deg,var(--gold2) 200deg,var(--gold3) 210deg,var(--gold2) 220deg,var(--gold3) 230deg,var(--gold2) 240deg,var(--gold3) 250deg,var(--gold2) 260deg,var(--gold3) 270deg,var(--gold2) 280deg,var(--gold3) 290deg,var(--gold2) 300deg,var(--gold3) 310deg,var(--gold2) 320deg,var(--gold3) 330deg,var(--gold2) 340deg,var(--gold3) 350deg,var(--gold2) 360deg);
+  box-shadow:0 0 0 3px rgba(0,0,0,0.5),0 0 40px rgba(245,197,66,0.35),0 16px 60px rgba(0,0,0,0.7);}
+.wheel-wrap{position:relative;width:min(400px,88vw);height:min(400px,88vw);}
+
+.pointer-wrap{position:absolute;top:-38px;left:50%;transform:translateX(-50%);z-index:20;display:flex;flex-direction:column;align-items:center;}
+.pointer-tri{width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:36px solid var(--gold);filter:drop-shadow(0 3px 6px rgba(0,0,0,0.7));}
+.pointer-circle{width:16px;height:16px;border-radius:50%;background:var(--gold);margin-top:-4px;box-shadow:0 0 10px rgba(245,197,66,0.6);}
+
+canvas{display:block;border-radius:50%;}
+
+.center-hub{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:66px;height:66px;border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,var(--gold3),var(--gold2) 60%,var(--gold2) 100%);
+  border:4px solid #fff;box-shadow:0 0 0 3px var(--gold2),0 4px 12px rgba(0,0,0,0.6);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:10;font-family:'Cinzel',serif;font-size:9px;font-weight:700;
+  color:var(--navy);letter-spacing:1px;text-align:center;line-height:1.2;transition:transform .12s;
+}
+.center-hub:active{transform:translate(-50%,-50%) scale(.9);}
+
+.result-wrap{
+  background:var(--navy2);border:2px solid var(--gold2);border-radius:8px;
+  padding:.8rem 1.5rem;text-align:center;width:100%;min-height:62px;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.2rem;
+  box-shadow:0 0 20px rgba(245,197,66,0.1);
+}
+.result-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:600;}
+.result-value{font-family:'Cinzel',serif;font-size:clamp(1.1rem,4vw,1.6rem);font-weight:700;color:#fff;letter-spacing:2px;transition:color .3s;}
+.result-value.spin-again{color:var(--gold);animation:pulse 0.6s ease-in-out 3;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.spin-btn{
+  width:100%;padding:1rem;border-radius:6px;
+  background:linear-gradient(135deg,#c0392b 0%,#96281b 100%);
+  color:#fff;border:2px solid rgba(255,255,255,0.15);
+  font-family:'Cinzel',serif;font-size:clamp(1.2rem,4vw,1.5rem);font-weight:700;
+  letter-spacing:5px;cursor:pointer;text-transform:uppercase;
+  transition:transform .12s,box-shadow .15s;
+  box-shadow:0 4px 20px rgba(192,57,43,0.45),inset 0 1px 0 rgba(255,255,255,0.15);
+  text-shadow:0 1px 2px rgba(0,0,0,0.5);
+}
+.spin-btn:hover{box-shadow:0 6px 28px rgba(192,57,43,0.6),inset 0 1px 0 rgba(255,255,255,0.15);}
+.spin-btn:active{transform:scale(.97);}
+.spin-btn:disabled{opacity:.4;cursor:default;transform:none;}
+
+.legend-panel{margin-top:2rem;background:var(--navy2);border:1px solid rgba(245,197,66,0.2);border-radius:10px;padding:1.2rem;width:100%;}
+.legend-title{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:.9rem;display:flex;align-items:center;gap:8px;}
+.legend-title::before,.legend-title::after{content:'';flex:1;height:1px;background:rgba(245,197,66,0.2);}
+.legend-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;}
+.legend-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.04);font-size:13px;}
+.legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+
+footer{margin-top:2.5rem;text-align:center;font-size:11px;color:rgba(255,255,255,0.2);letter-spacing:2px;}
+</style>
+</head>
+<body>
+<div class="everything">
+  <div class="lights">
+    <div class="light"></div><div class="light"></div><div class="light"></div>
+    <div class="light"></div><div class="light"></div><div class="light"></div>
+    <div class="light"></div><div class="light"></div><div class="light"></div>
+    <div class="light"></div><div class="light"></div><div class="light"></div>
+    <div class="light"></div><div class="light"></div><div class="light"></div>
+    <div class="light"></div><div class="light"></div><div class="light"></div>
+  </div>
+
+  <div class="header">
+    <div class="header-inner">
+      <h1>Wheel <span>of</span> Fortune</h1>
+      <p>Give it a spin!</p>
+    </div>
+  </div>
+
+  <div class="wheel-section">
+    <div class="wheel-outer">
+      <div class="wheel-wrap">
+        <div class="pointer-wrap">
+          <div class="pointer-tri"></div>
+          <div class="pointer-circle"></div>
+        </div>
+        <canvas id="wc"></canvas>
+        <button class="center-hub" id="hubBtn" aria-label="Spin the wheel">SPIN!</button>
+      </div>
+    </div>
+    <div class="result-wrap">
+      <div class="result-label">Your Result</div>
+      <div class="result-value" id="result">Spin the Wheel!</div>
+    </div>
+    <button class="spin-btn" id="spinBtn">SPIN THE WHEEL</button>
+  </div>
+
+  <div class="legend-panel">
+    <div class="legend-title">Prize Board</div>
+    <div class="legend-grid" id="legendGrid"></div>
+  </div>
+
+  <footer>★ &nbsp; WHEEL OF FORTUNE &nbsp; ★</footer>
+</div>
+
+<script>
+const ITEMS=[
+  {label:'$20',               color:'#27ae60'},
+  {label:'Spin Again',        color:'#f39c12'},
+  {label:'No Reward',         color:'#7f8c8d'},
+  {label:'Date with Me\n(Justyn Ngo)',color:'#e91e8c'},
+  {label:'Lego Set',          color:'#e74c3c'},
+  {label:'DoorDash',          color:'#d35400'},
+  {label:'Seductive\nDance',  color:'#8e44ad'},
+  {label:'Personal\nConcert', color:'#2980b9'},
+];
+
+// Allowed landing indices — stored as a bitmask (bits 1,3,6,7 = 0b11001010 = 202)
+const _v=(()=>{const m=202;return[...ITEMS.keys()].filter(i=>((m>>i)&1)===1);})();
+
+const N=ITEMS.length, TAU=Math.PI*2, ARC=TAU/N;
+// The pointer is fixed at the TOP of the canvas (270° = -PI/2 in canvas coords)
+const PTR=-Math.PI/2;
+
+let angle=0, spinning=false, audioCtx=null;
+
+function _tick(){
+  try{
+    if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.connect(g);g.connect(audioCtx.destination);
+    o.type='triangle';
+    o.frequency.setValueAtTime(880,audioCtx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(580,audioCtx.currentTime+0.04);
+    g.gain.setValueAtTime(0.16,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.05);
+    o.start(audioCtx.currentTime);o.stop(audioCtx.currentTime+0.06);
+  }catch(e){}
+}
+
+const canvas=document.getElementById('wc');
+const ctx=canvas.getContext('2d');
+
+function resize(){
+  const s=Math.min(400,window.innerWidth*0.88);
+  canvas.width=s;canvas.height=s;draw();
+}
+
+function draw(){
+  const sz=canvas.width,cx=sz/2,cy=sz/2,r=sz/2-1;
+  ctx.clearRect(0,0,sz,sz);
+  for(let i=0;i<N;i++){
+    const s=angle+i*ARC,e=s+ARC;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,s,e);ctx.closePath();
+    ctx.fillStyle=ITEMS[i].color;ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.4)';ctx.lineWidth=2;ctx.stroke();
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(s+ARC/2);
+    const lines=ITEMS[i].label.split('\n'),fs=13,lh=15,tx=r*0.22;
+    ctx.shadowColor='rgba(0,0,0,0.6)';ctx.shadowBlur=4;
+    ctx.fillStyle='#fff';ctx.font=`700 ${fs}px "Oswald",sans-serif`;
+    ctx.textAlign='left';ctx.textBaseline='middle';
+    lines.forEach((ln,li)=>ctx.fillText(ln,tx,(li-(lines.length-1)/2)*lh));
+    ctx.restore();
+  }
+  for(let i=0;i<N;i++){
+    const a=angle+i*ARC;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
+    ctx.strokeStyle='rgba(255,255,255,0.5)';ctx.lineWidth=2;ctx.stroke();
+  }
+  ctx.beginPath();ctx.arc(cx,cy,r,0,TAU);
+  ctx.strokeStyle='rgba(255,255,255,0.25)';ctx.lineWidth=3;ctx.stroke();
+  for(let i=0;i<N;i++){
+    const a=angle+i*ARC;
+    const px=cx+(r-6)*Math.cos(a),py=cy+(r-6)*Math.sin(a);
+    ctx.beginPath();ctx.arc(px,py,4,0,TAU);
+    ctx.fillStyle='#fff';ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.3)';ctx.lineWidth=1;ctx.stroke();
+  }
+}
+
+// Which segment is the pointer (top) touching right now?
+// PTR - angle tells us how far into the wheel the pointer falls.
+function readPointer(a){
+  return Math.floor(((PTR-a)%TAU+TAU)%TAU/ARC)%N;
+}
+
+const _sa=ITEMS.findIndex(it=>it.label.toLowerCase().includes('spin again'));
+
+function doSpin(isReSpin){
+  if(spinning)return;
+  spinning=true;
+  document.getElementById('spinBtn').disabled=true;
+  const el=document.getElementById('result');
+  el.className='result-value';el.textContent='…';
+
+  // Pick a random allowed segment; on a re-spin exclude Spin Again
+  const pool=isReSpin?_v.filter(i=>i!==_sa):_v;
+  const wi=pool[Math.floor(Math.random()*pool.length)];
+
+  // Target: pointer (PTR) sits in the MIDDLE of segment wi
+  // PTR - finalAngle ≡ wi*ARC + ARC/2  (mod TAU)
+  // finalAngle ≡ PTR - wi*ARC - ARC/2  (mod TAU)
+  const targetA=PTR-wi*ARC-ARC/2;
+  let delta=((targetA-angle)%TAU+TAU)%TAU;
+  if(delta<0.15)delta+=TAU;
+  const jitter=(Math.random()-0.5)*ARC*0.5;
+  const total=TAU*(8+Math.floor(Math.random()*7))+delta+jitter;
+  const dur=4000+Math.random()*2000;
+  const t0=performance.now(),a0=angle;
+  let last=-1;
+
+  (function frame(now){
+    const t=Math.min((now-t0)/dur,1);
+    angle=a0+total*(1-Math.pow(1-t,4));
+    draw();
+    const cur=readPointer(angle);
+    if(cur!==last){_tick();last=cur;}
+    if(t<1){requestAnimationFrame(frame);return;}
+    angle=a0+total;draw();
+    spinning=false;
+    el.textContent=ITEMS[wi].label.replace('\n',' ');
+    if(wi===_sa&&!isReSpin){
+      el.className='result-value spin-again';
+      setTimeout(()=>doSpin(true),2200);
+    }else{
+      el.className='result-value';
+      // Final result — lock the wheel permanently
+      document.getElementById('spinBtn').disabled=true;
+      document.getElementById('spinBtn').style.opacity='0.25';
+      document.getElementById('spinBtn').style.cursor='default';
+      document.getElementById('hubBtn').disabled=true;
+      document.getElementById('hubBtn').style.cursor='default';
+    }
+  })(performance.now());
+}
+
+document.getElementById('spinBtn').onclick=doSpin;
+document.getElementById('hubBtn').onclick=doSpin;
+
+// Prize board
+(()=>{
+  const g=document.getElementById('legendGrid');
+  ITEMS.forEach(it=>{
+    const d=document.createElement('div');d.className='legend-item';
+    d.innerHTML=`<span class="legend-dot" style="background:${it.color}"></span><span>${it.label.replace('\n',' ')}</span>`;
+    g.appendChild(d);
+  });
+})();
+
+window.addEventListener('resize',resize);
+resize();
+</script>
+</body>
+</html>
