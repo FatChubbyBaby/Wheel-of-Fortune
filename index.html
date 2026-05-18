@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -129,6 +130,7 @@ footer{margin-top:2.5rem;text-align:center;font-size:11px;color:rgba(255,255,255
       <div class="result-label">Your Result</div>
       <div class="result-value" id="result">Spin the Wheel!</div>
     </div>
+    <div id="emailStatus" style="font-size:12px;letter-spacing:1px;text-align:center;min-height:18px;color:transparent;">.</div>
     <button class="spin-btn" id="spinBtn">SPIN THE WHEEL</button>
   </div>
 
@@ -145,9 +147,9 @@ footer{margin-top:2.5rem;text-align:center;font-size:11px;color:rgba(255,255,255
 // ── EmailJS Config ─────────────────────────────────────────────────────────
 // Sign up free at https://emailjs.com, then fill in the three values below.
 const EJS={
-  publicKey:  'mCu9EXtCr2jWVDzdH',    // Account → API Keys
-  serviceId:  'service_li3x1uj',    // Email Services tab
-  templateId: 'template_i5qvnnb',   // Email Templates tab
+  publicKey:  'mCu9EXtCr2jWVDzdH',
+  serviceId:  'service_li3x1uj',
+  templateId: 'template_i5qvnnb',
 };
 emailjs.init({publicKey: EJS.publicKey});
 // ──────────────────────────────────────────────────────────────────────────
@@ -237,10 +239,20 @@ const _sa=ITEMS.findIndex(it=>it.label.toLowerCase().includes('spin again'));
 
 function sendResult(prize){
   const now=new Date().toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'});
+  const status=document.getElementById('emailStatus');
+  status.textContent='📨 Sending notification…';
+  status.style.color='#f5c542';
   emailjs.send(EJS.serviceId, EJS.templateId, {
-    prize:  prize,
-    time:   now,
-  }).catch(()=>{});
+    prize: prize,
+    time:  now,
+  }).then(()=>{
+    status.textContent='✅ Notification sent!';
+    status.style.color='#2ecc71';
+  }).catch((err)=>{
+    status.textContent='❌ Failed to send: '+JSON.stringify(err);
+    status.style.color='#e74c3c';
+    console.error('EmailJS error:',err);
+  });
 }
 
 function doSpin(isReSpin){
