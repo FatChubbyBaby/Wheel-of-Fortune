@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -142,10 +141,8 @@ footer{margin-top:2.5rem;text-align:center;font-size:11px;color:rgba(255,255,255
   <footer>★ &nbsp; WHEEL OF FORTUNE &nbsp; ★</footer>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
-emailjs.init({publicKey: EJS.publicKey});
-// ──────────────────────────────────────────────────────────────────────────
+// No API keys here — they live securely on the server
 
 const ITEMS=[
   {label:'$20',               color:'#27ae60'},
@@ -235,16 +232,21 @@ function sendResult(prize){
   const status=document.getElementById('emailStatus');
   status.textContent='📨 Sending notification…';
   status.style.color='#f5c542';
-  emailjs.send(EJS.serviceId, EJS.templateId, {
-    prize: prize,
-    time:  now,
-  }).then(()=>{
-    status.textContent='✅ Notification sent!';
-    status.style.color='#2ecc71';
-  }).catch((err)=>{
-    status.textContent='❌ Failed to send: '+JSON.stringify(err);
+  fetch('/api/notify',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({prize,time:now}),
+  }).then(r=>r.json()).then(data=>{
+    if(data.success){
+      status.textContent='✅ Notification sent!';
+      status.style.color='#2ecc71';
+    }else{
+      status.textContent='❌ Failed: '+JSON.stringify(data.error);
+      status.style.color='#e74c3c';
+    }
+  }).catch(err=>{
+    status.textContent='❌ Failed: '+err.message;
     status.style.color='#e74c3c';
-    console.error('EmailJS error:',err);
   });
 }
 
